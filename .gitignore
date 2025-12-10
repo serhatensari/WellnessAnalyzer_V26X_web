@@ -1,0 +1,10 @@
+# Gizli bilgiler
+.env
+
+# Sanal ortam ve cache
+venv/
+__pycache__/
+*.pyc
+
+# Geçici klasör
+tmp/
