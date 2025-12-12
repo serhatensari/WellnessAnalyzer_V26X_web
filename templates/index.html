@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>WellnessAnalyzer UltraPremium v26</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sol Menü -->
+  <aside class="sidebar">
+
+    <!-- SADECE WA İKONU (YENİ EKLEDİĞİMİZ) -->
+    <div class="sidebar-logo">
+        <img src="/static/img/wa_icon.png" alt="WA Icon">
+    </div>
+
+    <div class="brand">
+      <div class="brand-text">
+        <span class="brand-name" id="uiBrandName">WELLNESSANALYZER</span>
+        <span class="brand-version" id="uiBrandVersion">UltraPremium v26 Pro</span>
+      </div>
+    </div>
+
+    <nav class="nav nav-vertical">
+      <a href="#" class="nav-item active" data-target="tab-pdf" id="menuPdf">PDF ile Analiz</a>
+      <a href="#" class="nav-item" data-target="tab-complaint" id="menuComplaint">Şikâyet ile Analiz</a>
+      <a href="#" class="nav-item" data-target="tab-compare" id="menuCompare">İki Testi Karşılaştır</a>
+    </nav>
+
+    <section class="card">
+      <h3 id="uiCreditsTitle">Kredi Kullanımı</h3>
+      <p id="uiCreditsSingle">
+        ✅ Tek dil analiz: <strong>1 kredi</strong>
+      </p>
+      <p id="uiCreditsDouble">
+        🌍 Çift dil analiz: <strong>2 kredi</strong>
+      </p>
+      <p class="muted" id="uiCreditsNote">
+        Çift dil seçildiğinde tüm rapor içerikleri ve başlıklar iki dilde (alt alta) hazırlanır.
+      </p>
+    </section>
+
+    <section class="card">
+      <h3 id="uiHistoryTitle">Son Raporlar (60 gün)</h3>
+      {% if history %}
+        <ul class="history-list">
+          {% for h in history %}
+            <li>
+              <a href="/report/{{ h.id }}">{{ h.title }}</a>
+              <span class="history-meta">{{ h.created_at }} · {{ h.type }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted" id="uiNoHistory">Henüz kayıtlı rapor yok.</p>
+      {% endif %}
+    </section>
+  </aside>
+
+  <!-- Sağ Ana Alan -->
+  <main class="content">
+    <!-- Üst bar: Arayüz dili seçimi -->
+    <div class="topbar">
+      <div class="lang-switch">
+        <label for="globalLang" id="uiGlobalLangLabel">🌐 Arayüz Dili</label>
+        <select id="globalLang" class="select">
+          <option value="tr">Türkçe</option>
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
+          <option value="pt">Português</option>
+          <option value="fr">Français</option>
+          <option value="ru">Русский</option>
+          <option value="ar">العربية</option>
+          <option value="fa">فارسی</option>
+          <option value="mn">Монгол</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="it">Italiano</option>
+          <option value="az">Azərbaycan dili</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- PDF ile Analiz Sekmesi -->
+    <section class="card main-section" id="tab-pdf">
+      <h1 id="uiPdfTitle">PDF ile Wellness Analizi</h1>
+      <p class="subtitle" id="uiPdfSubtitle">
+        Test PDF'ini yükle. Sistem otomatik olarak <strong>Ultra Detaylı Wellness Raporu</strong> üretir.
+      </p>
+
+      <form class="form" action="/analyze-pdf" method="post" enctype="multipart/form-data" onsubmit="showLoader()">
+        <input type="hidden" name="detail" value="ultra">
+
+        <div class="form-group">
+          <label id="uiLblPdfFile">Test PDF Dosyası</label>
+          <input type="file" name="pdf_file" accept="application/pdf" required>
+        </div>
+
+        <div class="form-group">
+          <label id="uiLblBrandPdf">Marka</label>
+          <select name="brand" id="brandPdf">
+            <option value="generic">Genel Wellness Analizi (Markasız)</option>
+            <option value="onemore">OneMore International</option>
+            <option value="xaura">Xaura Global</option>
+            <option value="atomy">Atomy</option>
+            <option value="doctorem">Doctorem International</option>
+            <option value="algo_tts">Algophyco TTS</option>
+            <option value="herbalife">Herbalife</option>
+            <option value="welltures">Welltures Global</option>
+            <option value="now">Now International</option>
+            <option value="forever">Forever Living</option>
+            <option value="siberian">Siberian Wellness</option>
+            <option value="amare">Amare Global</option>
+            <option value="onyedi">Onyedi Wellness</option>
+            <option value="oxo">Oxo Global</option>
+            <option value="som">Som International</option>
+            <option value="indeva">İndeva Global</option>
+            <option value="pati">PatiPro Wellness</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiLblPrimaryLang">Birinci Dil</label>
+          <!-- Raporun DİLİ: target_lang -->
+          <select name="target_lang" id="targetLangPdf"></select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiLblSecondLang">İkinci Dil (isteğe bağlı)</label>
+          <!-- Raporun 2. DİLİ: second_lang -->
+          <select name="second_lang" id="secondLangPdf">
+            <!-- JS dolduracak -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiLblBilingual">Çift Dil PDF (2 kredi)</label>
+          <label>
+            <input type="checkbox" name="bilingual" value="1">
+            <span id="uiLblBilingualSpan"></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="uiBtnPdf">
+          Ultra Analizi Başlat
+        </button>
+      </form>
+    </section>
+
+    <!-- Şikâyet ile Analiz Sekmesi -->
+    <section class="card main-section" id="tab-complaint" style="display:none;">
+      <h1 id="uiComplaintTitle">Şikâyet ile Analiz</h1>
+
+      <form class="form" action="/analyze-complaint" method="post" onsubmit="showLoader()">
+        <div class="form-group">
+          <label id="uiComplaintTextLabel">Şikâyet ve mevcut durumunuzu yazın</label>
+          <textarea name="complaint_text" rows="6" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label id="uiComplaintBrand">Marka</label>
+          <select name="brand">
+            <option value="generic">Genel Wellness Analizi (Markasız)</option>
+            <option value="onemore">OneMore International</option>
+            <option value="xaura">Xaura Global</option>
+            <option value="atomy">Atomy</option>
+            <option value="doctorem">Doctorem International</option>
+            <option value="algo_tts">Algophyco TTS</option>
+            <option value="herbalife">Herbalife</option>
+            <option value="welltures">Welltures Global</option>
+            <option value="now">Now International</option>
+            <option value="forever">Forever Living</option>
+            <option value="siberian">Siberian Wellness</option>
+            <option value="amare">Amare Global</option>
+            <option value="onyedi">Onyedi Wellness</option>
+            <option value="oxo">Oxo Global</option>
+            <option value="som">Som International</option>
+            <option value="indeva">İndeva Global</option>
+            <option value="pati">PatiPro Wellness</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiComplaintPrimaryLang">Birinci Dil</label>
+          <select name="target_lang" id="targetLangComplaint"></select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiComplaintSecondLang">İkinci Dil (isteğe bağlı)</label>
+          <select name="second_lang" id="secondLangComplaint"></select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiComplaintBilingual">Çift Dil (2 kredi)</label>
+          <label>
+            <input type="checkbox" name="bilingual" value="1">
+            <span id="uiComplaintBilingualSpan"></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="uiBtnComplaint">
+          Analizi Başlat
+        </button>
+      </form>
+    </section>
+
+    <!-- Karşılaştırma Sekmesi -->
+    <section class="card main-section" id="tab-compare" style="display:none;">
+      <h1 id="uiCompareTitle">İki Test Karşılaştırma</h1>
+
+      <form class="form" action="/compare-tests" method="post" enctype="multipart/form-data" onsubmit="showLoader()">
+        <div class="form-group">
+          <label id="uiLblOldPdf">Eski Test PDF</label>
+          <input type="file" name="old_pdf" accept="application/pdf" required>
+        </div>
+        <div class="form-group">
+          <label id="uiLblNewPdf">Yeni Test PDF</label>
+          <input type="file" name="new_pdf" accept="application/pdf" required>
+        </div>
+
+        <div class="form-group">
+          <label id="uiCompareBrand">Marka</label>
+          <select name="brand">
+            <option value="generic">Genel Wellness Analizi (Markasız)</option>
+            <option value="onemore">OneMore International</option>
+            <option value="xaura">Xaura Global</option>
+            <option value="atomy">Atomy</option>
+            <option value="doctorem">Doctorem International</option>
+            <option value="algo_tts">Algophyco TTS</option>
+            <option value="herbalife">Herbalife</option>
+            <option value="welltures">Welltures Global</option>
+            <option value="now">Now International</option>
+            <option value="forever">Forever Living</option>
+            <option value="siberian">Siberian Wellness</option>
+            <option value="amare">Amare Global</option>
+            <option value="onyedi">Onyedi Wellness</option>
+            <option value="oxo">Oxo Global</option>
+            <option value="som">Som International</option>
+            <option value="indeva">İndeva Global</option>
+            <option value="pati">PatiPro Wellness</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiComparePrimaryLang">Birinci Dil</label>
+          <select name="target_lang" id="targetLangCompare"></select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiCompareSecondLang">İkinci Dil (isteğe bağlı)</label>
+          <select name="second_lang" id="secondLangCompare"></select>
+        </div>
+
+        <div class="form-group">
+          <label id="uiCompareBilingual">Çift Dil (2 kredi)</label>
+          <label>
+            <input type="checkbox" name="bilingual" value="1">
+            <span id="uiCompareBilingualSpan"></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="uiBtnCompare">
+          Karşılaştırmayı Başlat
+        </button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Loader Overlay -->
+<div id="loader-overlay" class="loader-overlay" style="display:none;">
+  <div class="loader"></div>
+  <p id="uiLoaderText">Analiz yapılıyor, lütfen bekleyin...</p>
+</div>
+
+<script>
+// Dil isimleri (rapor dilleri için)
+const languages = {
+  tr:"Türkçe",
+  en:"English",
+  de:"Deutsch",
+  es:"Español",
+  pt:"Português",
+  fr:"Français",
+  ru:"Русский",
+  ar:"العربية",
+  fa:"فارسی",
+  mn:"Монгол",
+  id:"Bahasa Indonesia",
+  it:"Italiano",
+  az:"Azərbaycan dili"
+};
+
+// Arayüz metinleri
+const uiTexts = {
+  tr: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Arayüz Dili",
+    menuPdf: "PDF ile Analiz",
+    menuComplaint: "Şikâyet ile Analiz",
+    menuCompare: "İki Testi Karşılaştır",
+    creditsTitle: "Kredi Kullanımı",
+    creditsSingle: "✅ Tek dil analiz: <strong>1 kredi</strong>",
+    creditsDouble: "🌍 Çift dil analiz: <strong>2 kredi</strong>",
+    creditsNote: "Çift dil seçildiğinde tüm rapor içerikleri ve başlıklar iki dilde (alt alta) hazırlanır.",
+    historyTitle: "Son Raporlar (60 gün)",
+    noHistory: "Henüz kayıtlı rapor yok.",
+    pdfTitle: "PDF ile Wellness Analizi",
+    pdfSubtitle: "Test PDF'ini yükle. Sistem otomatik olarak <strong>Ultra Detaylı Wellness Raporu</strong> üretir.",
+    lblPdfFile: "Test PDF Dosyası",
+    lblBrand: "Marka",
+    lblPrimaryLang: "Birinci Dil",
+    lblSecondLang: "İkinci Dil (isteğe bağlı)",
+    noSecondLang: "Tek dil yeterli",
+    lblBilingual: "Çift Dil PDF (2 kredi)",
+    btnPdf: "Ultra Analizi Başlat",
+    complaintTitle: "Şikâyet ile Analiz",
+    complaintTextLabel: "Şikâyet ve mevcut durumunuzu yazın",
+    complaintPrimaryLang: "Birinci Dil",
+    complaintSecondLang: "İkinci Dil (isteğe bağlı)",
+    complaintBilingual: "Çift Dil (2 kredi)",
+    btnComplaint: "Analizi Başlat",
+    compareTitle: "İki Test Karşılaştırma",
+    lblOldPdf: "Eski Test PDF",
+    lblNewPdf: "Yeni Test PDF",
+    comparePrimaryLang: "Birinci Dil",
+    compareSecondLang: "İkinci Dil (isteğe bağlı)",
+    compareBilingual: "Çift Dil (2 kredi)",
+    btnCompare: "Karşılaştırmayı Başlat",
+    loaderText: "Analiz yapılıyor, lütfen bekleyin..."
+  },
+  en: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Interface Language",
+    menuPdf: "Analyze with PDF",
+    menuComplaint: "Complaint-based Analysis",
+    menuCompare: "Compare Two Tests",
+    creditsTitle: "Credit Usage",
+    creditsSingle: "✅ Single language analysis: <strong>1 credit</strong>",
+    creditsDouble: "🌍 Dual language analysis: <strong>2 credits</strong>",
+    creditsNote: "If dual language is selected, all contents and headings are prepared in both languages (stacked).",
+    historyTitle: "Recent Reports (60 days)",
+    noHistory: "No reports saved yet.",
+    pdfTitle: "Wellness Analysis with PDF",
+    pdfSubtitle: "Upload the test PDF. The system will automatically create an <strong>ultra-detailed wellness report</strong>.",
+    lblPdfFile: "Test PDF File",
+    lblBrand: "Brand",
+    lblPrimaryLang: "Primary Language",
+    lblSecondLang: "Second Language (optional)",
+    noSecondLang: "Single language only",
+    lblBilingual: "Dual Language PDF (2 credits)",
+    btnPdf: "Start Ultra Analysis",
+    complaintTitle: "Complaint-based Analysis",
+    complaintTextLabel: "Write your complaints and current condition",
+    complaintPrimaryLang: "Primary Language",
+    complaintSecondLang: "Second Language (optional)",
+    complaintBilingual: "Dual Language (2 credits)",
+    btnComplaint: "Start Analysis",
+    compareTitle: "Compare Two Tests",
+    lblOldPdf: "Old Test PDF",
+    lblNewPdf: "New Test PDF",
+    comparePrimaryLang: "Primary Language",
+    compareSecondLang: "Second Language (optional)",
+    compareBilingual: "Dual Language (2 credits)",
+    btnCompare: "Start Comparison",
+    loaderText: "Analysis in progress, please wait..."
+  },
+  de: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Oberflächensprache",
+    menuPdf: "Analyse mit PDF",
+    menuComplaint: "Beschwerdebasierte Analyse",
+    menuCompare: "Zwei Tests vergleichen",
+    creditsTitle: "Kreditnutzung",
+    creditsSingle: "✅ Einsprachige Analyse: <strong>1 Kredit</strong>",
+    creditsDouble: "🌍 Zweisprachige Analyse: <strong>2 Kredite</strong>",
+    creditsNote: "Bei Zweisprachigkeit werden alle Inhalte und Überschriften in zwei Sprachen (untereinander) erstellt.",
+    historyTitle: "Letzte Berichte (60 Tage)",
+    noHistory: "Noch keine Berichte gespeichert.",
+    pdfTitle: "Wellnessanalyse mit PDF",
+    pdfSubtitle: "Laden Sie das Test-PDF hoch. Das System erstellt automatisch einen <strong>ultradetaillierten Wellnessbericht</strong>.",
+    lblPdfFile: "Test-PDF-Datei",
+    lblBrand: "Marke",
+    lblPrimaryLang: "Hauptsprache",
+    lblSecondLang: "Zweitsprache (optional)",
+    noSecondLang: "Nur eine Sprache",
+    lblBilingual: "Zweisprachiges PDF (2 Kredite)",
+    btnPdf: "Ultrafanalyse starten",
+    complaintTitle: "Analyse nach Beschwerden",
+    complaintTextLabel: "Beschreiben Sie Ihre Beschwerden und Ihre aktuelle Situation",
+    complaintPrimaryLang: "Hauptsprache",
+    complaintSecondLang: "Zweitsprache (optional)",
+    complaintBilingual: "Zwei Sprachen (2 Kredite)",
+    btnComplaint: "Analyse starten",
+    compareTitle: "Zwei Tests vergleichen",
+    lblOldPdf: "Altes Test-PDF",
+    lblNewPdf: "Neues Test-PDF",
+    comparePrimaryLang: "Hauptsprache",
+    compareSecondLang: "Zweitsprache (optional)",
+    compareBilingual: "Zwei Sprachen (2 Kredite)",
+    btnCompare: "Vergleich starten",
+    loaderText: "Analyse läuft, bitte warten..."
+  },
+  es: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Idioma de la interfaz",
+    menuPdf: "Análisis con PDF",
+    menuComplaint: "Análisis según quejas",
+    menuCompare: "Comparar dos pruebas",
+    creditsTitle: "Uso de créditos",
+    creditsSingle: "✅ Análisis en un idioma: <strong>1 crédito</strong>",
+    creditsDouble: "🌍 Análisis en dos idiomas: <strong>2 créditos</strong>",
+    creditsNote: "Si se elige el modo de dos idiomas, todo el informe se prepara en ambos idiomas.",
+    historyTitle: "Informes recientes (60 días)",
+    noHistory: "Todavía no hay informes guardados.",
+    pdfTitle: "Análisis de bienestar con PDF",
+    pdfSubtitle: "Sube el PDF del test. El sistema generará automáticamente un <strong>informe de bienestar ultra detallado</strong>.",
+    lblPdfFile: "Archivo PDF del test",
+    lblBrand: "Marca",
+    lblPrimaryLang: "Idioma principal",
+    lblSecondLang: "Segundo idioma (opcional)",
+    noSecondLang: "Solo un idioma",
+    lblBilingual: "PDF en dos idiomas (2 créditos)",
+    btnPdf: "Iniciar análisis ultra",
+    complaintTitle: "Análisis según quejas",
+    complaintTextLabel: "Escribe tus quejas y estado actual",
+    complaintPrimaryLang: "Idioma principal",
+    complaintSecondLang: "Segundo idioma (opcional)",
+    complaintBilingual: "Dos idiomas (2 créditos)",
+    btnComplaint: "Iniciar análisis",
+    compareTitle: "Comparar dos pruebas",
+    lblOldPdf: "PDF de la prueba anterior",
+    lblNewPdf: "PDF de la prueba nueva",
+    comparePrimaryLang: "Idioma principal",
+    compareSecondLang: "Segundo idioma (opcional)",
+    compareBilingual: "Dos idiomas (2 créditos)",
+    btnCompare: "Iniciar comparación",
+    loaderText: "Análisis en curso, por favor espera..."
+  },
+  pt: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Idioma da interface",
+    menuPdf: "Análise com PDF",
+    menuComplaint: "Análise baseada em queixas",
+    menuCompare: "Comparar dois testes",
+    creditsTitle: "Uso de créditos",
+    creditsSingle: "✅ Análise em um idioma: <strong>1 crédito</strong>",
+    creditsDouble: "🌍 Análise em dois idiomas: <strong>2 créditos</strong>",
+    creditsNote: "Se o modo de dois idiomas for selecionado, todo o relatório será preparado em ambos os idiomas.",
+    historyTitle: "Relatórios recentes (60 dias)",
+    noHistory: "Ainda não há relatórios salvos.",
+    pdfTitle: "Análise de bem-estar com PDF",
+    pdfSubtitle: "Envie o PDF do teste. O sistema irá gerar automaticamente um <strong>relatório de bem-estar ultra detalhado</strong>.",
+    lblPdfFile: "Arquivo PDF do teste",
+    lblBrand: "Marca",
+    lblPrimaryLang: "Idioma principal",
+    lblSecondLang: "Segundo idioma (opcional)",
+    noSecondLang: "Apenas um idioma",
+    lblBilingual: "PDF bilíngue (2 créditos)",
+    btnPdf: "Iniciar análise ultra",
+    complaintTitle: "Análise baseada em queixas",
+    complaintTextLabel: "Escreva as suas queixas e condição atual",
+    complaintPrimaryLang: "Idioma principal",
+    complaintSecondLang: "Segundo idioma (opcional)",
+    complaintBilingual: "Dois idiomas (2 créditos)",
+    btnComplaint: "Iniciar análise",
+    compareTitle: "Comparar dois testes",
+    lblOldPdf: "PDF do teste antigo",
+    lblNewPdf: "PDF do teste novo",
+    comparePrimaryLang: "Idioma principal",
+    compareSecondLang: "Segundo idioma (opcional)",
+    compareBilingual: "Dois idiomas (2 créditos)",
+    btnCompare: "Iniciar comparação",
+    loaderText: "Análise em andamento, aguarde..."
+  },
+  fr: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Langue de l'interface",
+    menuPdf: "Analyse via PDF",
+    menuComplaint: "Analyse basée sur les plaintes",
+    menuCompare: "Comparer deux tests",
+    creditsTitle: "Utilisation des crédits",
+    creditsSingle: "✅ Analyse monolingue : <strong>1 crédit</strong>",
+    creditsDouble: "🌍 Analyse bilingue : <strong>2 crédits</strong>",
+    creditsNote: "Si le mode bilingue est choisi, tout le rapport est préparé dans les deux langues.",
+    historyTitle: "Rapports récents (60 jours)",
+    noHistory: "Aucun rapport enregistré pour le moment.",
+    pdfTitle: "Analyse de bien-être via PDF",
+    pdfSubtitle: "Téléchargez le PDF du test. Le système générera automatiquement un <strong>rapport de bien-être ultra détaillé</strong>.",
+    lblPdfFile: "Fichier PDF du test",
+    lblBrand: "Marque",
+    lblPrimaryLang: "Langue principale",
+    lblSecondLang: "Deuxième langue (optionnelle)",
+    noSecondLang: "Une seule langue",
+    lblBilingual: "PDF bilingue (2 crédits)",
+    btnPdf: "Lancer l'analyse ultra",
+    complaintTitle: "Analyse basée sur les plaintes",
+    complaintTextLabel: "Décrivez vos plaintes et votre état actuel",
+    complaintPrimaryLang: "Langue principale",
+    complaintSecondLang: "Deuxième langue (optionnelle)",
+    complaintBilingual: "Deux langues (2 crédits)",
+    btnComplaint: "Lancer l'analyse",
+    compareTitle: "Comparer deux tests",
+    lblOldPdf: "Ancien test PDF",
+    lblNewPdf: "Nouveau test PDF",
+    comparePrimaryLang: "Langue principale",
+    compareSecondLang: "Deuxième langue (optionnelle)",
+    compareBilingual: "Deux langues (2 crédits)",
+    btnCompare: "Lancer la comparaison",
+    loaderText: "Analyse en cours, veuillez patienter..."
+  },
+  ru: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Язык интерфейса",
+    menuPdf: "Анализ по PDF",
+    menuComplaint: "Анализ по жалобам",
+    menuCompare: "Сравнить два теста",
+    creditsTitle: "Использование кредитов",
+    creditsSingle: "✅ Одноязычный анализ: <strong>1 кредит</strong>",
+    creditsDouble: "🌍 Двуязычный анализ: <strong>2 кредита</strong>",
+    creditsNote: "Если выбран двуязычный режим, весь отчёт формируется на двух языках.",
+    historyTitle: "Недавние отчёты (60 дней)",
+    noHistory: "Пока нет сохранённых отчётов.",
+    pdfTitle: "Анализ здоровья по PDF",
+    pdfSubtitle: "Загрузите тестовый PDF. Система автоматически создаст <strong>ультрадетальный отчёт о здоровье</strong>.",
+    lblPdfFile: "Тестовый PDF-файл",
+    lblBrand: "Бренд",
+    lblPrimaryLang: "Основной язык",
+    lblSecondLang: "Второй язык (опционально)",
+    noSecondLang: "Только один язык",
+    lblBilingual: "Двуязычный PDF (2 кредита)",
+    btnPdf: "Запустить ультраанализ",
+    complaintTitle: "Анализ по жалобам",
+    complaintTextLabel: "Опишите ваши жалобы и текущее состояние",
+    complaintPrimaryLang: "Основной язык",
+    complaintSecondLang: "Второй язык (опционально)",
+    complaintBilingual: "Два языка (2 кредита)",
+    btnComplaint: "Начать анализ",
+    compareTitle: "Сравнение двух тестов",
+    lblOldPdf: "Старый тест PDF",
+    lblNewPdf: "Новый тест PDF",
+    comparePrimaryLang: "Основной язык",
+    compareSecondLang: "Второй язык (опционально)",
+    compareBilingual: "Два языка (2 кредита)",
+    btnCompare: "Начать сравнение",
+    loaderText: "Идёт анализ, пожалуйста, подождите..."
+  },
+    it: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Lingua dell'interfaccia",
+    menuPdf: "Analisi con PDF",
+    menuComplaint: "Analisi basata sui disturbi",
+    menuCompare: "Confronta due test",
+    creditsTitle: "Utilizzo dei crediti",
+    creditsSingle: "✅ Analisi in una lingua: <strong>1 credito</strong>",
+    creditsDouble: "🌍 Analisi in due lingue: <strong>2 crediti</strong>",
+    creditsNote: "Se viene selezionata la modalità a due lingue, tutti i contenuti e i titoli del rapporto vengono preparati in entrambe le lingue (in pila).",
+    historyTitle: "Rapporti recenti (60 giorni)",
+    noHistory: "Non ci sono ancora rapporti salvati.",
+    pdfTitle: "Analisi del benessere con PDF",
+    pdfSubtitle: "Carica il PDF del test. Il sistema genererà automaticamente un <strong>Rapporto di Benessere ultra dettagliato</strong>.",
+    lblPdfFile: "File PDF del test",
+    lblBrand: "Brand",
+    lblPrimaryLang: "Lingua principale",
+    lblSecondLang: "Seconda lingua (opzionale)",
+    noSecondLang: "Solo una lingua",
+    lblBilingual: "PDF in due lingue (2 crediti)",
+    btnPdf: "Avvia analisi ultra",
+    complaintTitle: "Analisi basata sui disturbi",
+    complaintTextLabel: "Scrivi i tuoi disturbi e il tuo stato attuale",
+    complaintPrimaryLang: "Lingua principale",
+    complaintSecondLang: "Seconda lingua (opzionale)",
+    complaintBilingual: "Due lingue (2 crediti)",
+    btnComplaint: "Avvia analisi",
+    compareTitle: "Confronta due test",
+    lblOldPdf: "PDF del test precedente",
+    lblNewPdf: "PDF del nuovo test",
+    comparePrimaryLang: "Lingua principale",
+    compareSecondLang: "Seconda lingua (opzionale)",
+    compareBilingual: "Due lingue (2 crediti)",
+    btnCompare: "Avvia confronto",
+    loaderText: "Analisi in corso, attendere prego..."
+  },
+  az: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 İnterfeys dili",
+    menuPdf: "PDF ilə analiz",
+    menuComplaint: "Şikayətə əsaslanan analiz",
+    menuCompare: "İki testi müqayisə et",
+    creditsTitle: "Kredit istifadəsi",
+    creditsSingle: "✅ Tək dilli analiz: <strong>1 kredit</strong>",
+    creditsDouble: "🌍 İki dilli analiz: <strong>2 kredit</strong>",
+    creditsNote: "İki dilli rejim seçilərsə, hesabatdakı bütün məzmun və başlıqlar hər iki dildə (üst-üstə) hazırlanır.",
+    historyTitle: "Son hesabatlar (60 gün)",
+    noHistory: "Hələ saxlanmış hesabat yoxdur.",
+    pdfTitle: "PDF ilə wellness analizi",
+    pdfSubtitle: "Testin PDF faylını yükləyin. Sistem avtomatik olaraq <strong>çox detallı Wellness Hesabatı</strong> hazırlayacaq.",
+    lblPdfFile: "Testin PDF faylı",
+    lblBrand: "Brend",
+    lblPrimaryLang: "Əsas dil",
+    lblSecondLang: "İkinci dil (istəyə bağlı)",
+    noSecondLang: "Yalnız bir dil",
+    lblBilingual: "İki dilli PDF (2 kredit)",
+    btnPdf: "Ultra analizə başla",
+    complaintTitle: "Şikayətə əsaslanan analiz",
+    complaintTextLabel: "Mövcud şikayətlərinizi və vəziyyətinizi yazın",
+    complaintPrimaryLang: "Əsas dil",
+    complaintSecondLang: "İkinci dil (istəyə bağlı)",
+    complaintBilingual: "İki dil (2 kredit)",
+    btnComplaint: "Analizə başla",
+    compareTitle: "İki testi müqayisə et",
+    lblOldPdf: "Köhnə testin PDF faylı",
+    lblNewPdf: "Yeni testin PDF faylı",
+    comparePrimaryLang: "Əsas dil",
+    compareSecondLang: "İkinci dil (istəyə bağlı)",
+    compareBilingual: "İki dil (2 kredit)",
+    btnCompare: "Müqayisəyə başla",
+    loaderText: "Analiz aparılır, zəhmət olmasa gözləyin..."
+  },
+  ar: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 لغة الواجهة",
+    menuPdf: "تحليل عبر ملف PDF",
+    menuComplaint: "تحليل بناءً على الشكوى",
+    menuCompare: "مقارنة اختبارين",
+    creditsTitle: "استخدام الرصيد",
+    creditsSingle: "✅ تحليل بلغة واحدة: <strong>رصيد واحد</strong>",
+    creditsDouble: "🌍 تحليل بلغتين: <strong>رصيدان</strong>",
+    creditsNote: "عند اختيار وضع اللغتين، يتم إعداد التقرير بالكامل باللغتين.",
+    historyTitle: "التقارير الأخيرة (60 يومًا)",
+    noHistory: "لا توجد تقارير محفوظة بعد.",
+    pdfTitle: "تحليل العافية عبر PDF",
+    pdfSubtitle: "قم برفع ملف PDF للاختبار. سيقوم النظام تلقائيًا بإنشاء <strong>تقرير عافية مفصل جدًا</strong>.",
+    lblPdfFile: "ملف PDF للاختبار",
+    lblBrand: "العلامة التجارية",
+    lblPrimaryLang: "اللغة الأساسية",
+    lblSecondLang: "اللغة الثانية (اختياري)",
+    noSecondLang: "لغة واحدة فقط",
+    lblBilingual: "PDF بلغتين (رصيدان)",
+    btnPdf: "بدء التحليل المفصل",
+    complaintTitle: "تحليل بناءً على الشكوى",
+    complaintTextLabel: "اكتب شكواك وحالتك الحالية",
+    complaintPrimaryLang: "اللغة الأساسية",
+    complaintSecondLang: "اللغة الثانية (اختياري)",
+    complaintBilingual: "لغتان (رصيدان)",
+    btnComplaint: "بدء التحليل",
+    compareTitle: "مقارنة اختبارين",
+    lblOldPdf: "ملف PDF للاختبار القديم",
+    lblNewPdf: "ملف PDF للاختبار الجديد",
+    comparePrimaryLang: "اللغة الأساسية",
+    compareSecondLang: "اللغة الثانية (اختياري)",
+    compareBilingual: "لغتان (رصيدان)",
+    btnCompare: "بدء المقارنة",
+    loaderText: "جاري إجراء التحليل، يرجى الانتظار..."
+  },
+  fa: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 زبان رابط کاربری",
+    menuPdf: "تحلیل با PDF",
+    menuComplaint: "تحلیل بر اساس شکایت",
+    menuCompare: "مقایسه دو تست",
+    creditsTitle: "استفاده از اعتبار",
+    creditsSingle: "✅ تحلیل تک‌زبانه: <strong>۱ اعتبار</strong>",
+    creditsDouble: "🌍 تحلیل دو‌زبانه: <strong>۲ اعتبار</strong>",
+    creditsNote: "در حالت دو زبانه، تمام گزارش در هر دو زبان آماده می‌شود.",
+    historyTitle: "گزارش‌های اخیر (۶۰ روز)",
+    noHistory: "هنوز گزارشی ذخیره نشده است.",
+    pdfTitle: "تحلیل سلامت با PDF",
+    pdfSubtitle: "فایل PDF تست را آپلود کنید. سیستم به‌طور خودکار یک <strong>گزارش سلامت فوق‌العاده دقیق</strong> تولید می‌کند.",
+    lblPdfFile: "فایل PDF تست",
+    lblBrand: "برند",
+    lblPrimaryLang: "زبان اصلی",
+    lblSecondLang: "زبان دوم (اختیاری)",
+    noSecondLang: "فقط یک زبان",
+    lblBilingual: "PDF دو زبانه (۲ اعتبار)",
+    btnPdf: "شروع تحلیل فوق‌العاده",
+    complaintTitle: "تحلیل بر اساس شکایت",
+    complaintTextLabel: "شکایت‌ها و وضعیت فعلی خود را بنویسید",
+    complaintPrimaryLang: "زبان اصلی",
+    complaintSecondLang: "زبان دوم (اختیاری)",
+    complaintBilingual: "دو زبان (۲ اعتبار)",
+    btnComplaint: "شروع تحلیل",
+    compareTitle: "مقایسه دو تست",
+    lblOldPdf: "فایل PDF تست قدیمی",
+    lblNewPdf: "فایل PDF تست جدید",
+    comparePrimaryLang: "زبان اصلی",
+    compareSecondLang: "زبان دوم (اختیاری)",
+    compareBilingual: "دو زبان (۲ اعتبار)",
+    btnCompare: "شروع مقایسه",
+    loaderText: "در حال انجام تحلیل، لطفاً صبر کنید..."
+  },
+  mn: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Интерфейсийн хэл",
+    menuPdf: "PDF ашиглан шинжилгээ",
+    menuComplaint: "Гомдолд суурилсан шинжилгээ",
+    menuCompare: "Хоёр тестийг харьцуулах",
+    creditsTitle: "Кредит ашиглалт",
+    creditsSingle: "✅ Нэг хэл дээрх шинжилгээ: <strong>1 кредит</strong>",
+    creditsDouble: "🌍 Хоёр хэл дээрх шинжилгээ: <strong>2 кредит</strong>",
+    creditsNote: "Хоёр хэлт горим сонгосон үед тайлан бүрэн хоёр хэл дээр бэлтгэгдэнэ.",
+    historyTitle: "Сүүлийн тайлангууд (60 өдөр)",
+    noHistory: "Одоогоор хадгалсан тайлан алга.",
+    pdfTitle: "PDF ашиглан сайн сайхны шинжилгээ",
+    pdfSubtitle: "Тестийн PDF файлыг байршуулаарай. Систем автоматаар <strong>маш дэлгэрэнгүй сайн сайхны тайлан</strong> үүсгэнэ.",
+    lblPdfFile: "Тестийн PDF файл",
+    lblBrand: "Брэнд",
+    lblPrimaryLang: "Үндсэн хэл",
+    lblSecondLang: "Хоёр дахь хэл (сонголтоор)",
+    noSecondLang: "Зөвхөн нэг хэл",
+    lblBilingual: "Хоёр хэлтэй PDF (2 кредит)",
+    btnPdf: "Ультра шинжилгээ эхлүүлэх",
+    complaintTitle: "Гомдолд суурилсан шинжилгээ",
+    complaintTextLabel: "Гомдол болон одоогийн байдлаа бичнэ үү",
+    complaintPrimaryLang: "Үндсэн хэл",
+    complaintSecondLang: "Хоёр дахь хэл (сонголтоор)",
+    complaintBilingual: "Хоёр хэл (2 кредит)",
+    btnComplaint: "Шинжилгээг эхлүүлэх",
+    compareTitle: "Хоёр тестийг харьцуулах",
+    lblOldPdf: "Хуучин тестийн PDF",
+    lblNewPdf: "Шинэ тестийн PDF",
+    comparePrimaryLang: "Үндсэн хэл",
+    compareSecondLang: "Хоёр дахь хэл (сонголтоор)",
+    compareBilingual: "Хоёр хэл (2 кредит)",
+    btnCompare: "Харьцуулалтыг эхлүүлэх",
+    loaderText: "Шинжилгээ явагдаж байна, түр хүлээнэ үү..."
+  },
+  id: {
+    brandName: "WELLNESSANALYZER",
+    brandVersion: "UltraPremium v26 Pro",
+    globalLangLabel: "🌐 Bahasa antarmuka",
+    menuPdf: "Analisis dengan PDF",
+    menuComplaint: "Analisis berdasarkan keluhan",
+    menuCompare: "Bandingkan dua tes",
+    creditsTitle: "Penggunaan kredit",
+    creditsSingle: "✅ Analisis satu bahasa: <strong>1 kredit</strong>",
+    creditsDouble: "🌍 Analisis dua bahasa: <strong>2 kredit</strong>",
+    creditsNote: "Jika mode dua bahasa dipilih, semua isi laporan dan judul disiapkan dalam dua bahasa (bertumpuk).",
+    historyTitle: "Laporan terbaru (60 hari)",
+    noHistory: "Belum ada laporan tersimpan.",
+    pdfTitle: "Analisis kebugaran dengan PDF",
+    pdfSubtitle: "Unggah PDF tes. Sistem akan otomatis membuat <strong>Laporan Kebugaran yang sangat detail</strong>.",
+    lblPdfFile: "File PDF tes",
+    lblBrand: "Merek",
+    lblPrimaryLang: "Bahasa utama",
+    lblSecondLang: "Bahasa kedua (opsional)",
+    noSecondLang: "Satu bahasa saja",
+    lblBilingual: "PDF dua bahasa (2 kredit)",
+    btnPdf: "Mulai analisis ultra",
+    complaintTitle: "Analisis berdasarkan keluhan",
+    complaintTextLabel: "Tuliskan keluhan dan kondisi Anda saat ini",
+    complaintPrimaryLang: "Bahasa utama",
+    complaintSecondLang: "Bahasa kedua (opsional)",
+    complaintBilingual: "Dua bahasa (2 kredit)",
+    btnComplaint: "Mulai analisis",
+    compareTitle: "Bandingkan dua tes",
+    lblOldPdf: "PDF tes lama",
+    lblNewPdf: "PDF tes baru",
+    comparePrimaryLang: "Bahasa utama",
+    compareSecondLang: "Bahasa kedua (opsional)",
+    compareBilingual: "Dua bahasa (2 kredit)",
+    btnCompare: "Mulai perbandingan",
+    loaderText: "Analisis sedang berlangsung, harap tunggu..."
+  }
+};
+
+// Dropdownları doldur (rapor dilleri)
+function fillSelect(el, includeEmpty=false){
+  el.innerHTML = "";
+  if(includeEmpty){
+    el.innerHTML += `<option value="" data-role="nosecond"></option>`;
+  }
+  Object.entries(languages).forEach(([code,label])=>{
+    el.innerHTML += `<option value="${code}">${label}</option>`;
+  });
+}
+
+// Tüm targetLang / secondLang select'lerini doldur
+document.querySelectorAll("select[id^='targetLang']").forEach(s=>fillSelect(s,false));
+document.querySelectorAll("select[id^='secondLang']").forEach(s=>fillSelect(s,true));
+
+// Global arayüz dili
+const globalLang = document.getElementById("globalLang");
+
+function applyUiLanguage(lang){
+  const t = uiTexts[lang] || uiTexts.tr;
+
+  document.getElementById("uiBrandName").textContent = t.brandName;
+  document.getElementById("uiBrandVersion").textContent = t.brandVersion;
+  document.getElementById("uiGlobalLangLabel").textContent = t.globalLangLabel;
+
+  document.getElementById("menuPdf").textContent = t.menuPdf;
+  document.getElementById("menuComplaint").textContent = t.menuComplaint;
+  document.getElementById("menuCompare").textContent = t.menuCompare;
+
+  document.getElementById("uiCreditsTitle").textContent = t.creditsTitle;
+  document.getElementById("uiCreditsSingle").innerHTML = t.creditsSingle;
+  document.getElementById("uiCreditsDouble").innerHTML = t.creditsDouble;
+  document.getElementById("uiCreditsNote").textContent = t.creditsNote;
+
+  document.getElementById("uiHistoryTitle").textContent = t.historyTitle;
+  const noHist = document.getElementById("uiNoHistory");
+  if(noHist){ noHist.textContent = t.noHistory; }
+
+  document.getElementById("uiPdfTitle").textContent = t.pdfTitle;
+  document.getElementById("uiPdfSubtitle").innerHTML = t.pdfSubtitle;
+  document.getElementById("uiLblPdfFile").textContent = t.lblPdfFile;
+  document.getElementById("uiLblBrandPdf").textContent = t.lblBrand;
+  document.getElementById("uiLblPrimaryLang").textContent = t.lblPrimaryLang;
+  document.getElementById("uiLblSecondLang").textContent = t.lblSecondLang;
+  document.getElementById("uiLblBilingual").textContent = t.lblBilingual;
+  document.getElementById("uiBtnPdf").textContent = t.btnPdf;
+
+  document.getElementById("uiComplaintTitle").textContent = t.complaintTitle;
+  document.getElementById("uiComplaintTextLabel").textContent = t.complaintTextLabel;
+  document.getElementById("uiComplaintBrand").textContent = t.lblBrand;
+  document.getElementById("uiComplaintPrimaryLang").textContent = t.complaintPrimaryLang;
+  document.getElementById("uiComplaintSecondLang").textContent = t.complaintSecondLang;
+  document.getElementById("uiComplaintBilingual").textContent = t.complaintBilingual;
+  document.getElementById("uiBtnComplaint").textContent = t.btnComplaint;
+
+  document.getElementById("uiCompareTitle").textContent = t.compareTitle;
+  document.getElementById("uiLblOldPdf").textContent = t.lblOldPdf;
+  document.getElementById("uiLblNewPdf").textContent = t.lblNewPdf;
+  document.getElementById("uiCompareBrand").textContent = t.lblBrand;
+  document.getElementById("uiComparePrimaryLang").textContent = t.comparePrimaryLang;
+  document.getElementById("uiCompareSecondLang").textContent = t.compareSecondLang;
+  document.getElementById("uiCompareBilingual").textContent = t.compareBilingual;
+  document.getElementById("uiBtnCompare").textContent = t.btnCompare;
+
+  const loader = document.getElementById("uiLoaderText");
+  if(loader){ loader.textContent = t.loaderText; }
+
+  // İkinci dil select'lerindeki "Tek dil yeterli" metnini güncelle
+  document.querySelectorAll("select[id^='secondLang']").forEach(sel=>{
+    const opt = sel.querySelector('option[data-role="nosecond"]');
+    if(opt){ opt.textContent = t.noSecondLang; }
+  });
+}
+
+// target_lang select'lerini global arayüz diliyle senkron tut
+function syncTargetLangs(oldLang, newLang){
+  document.querySelectorAll("select[id^='targetLang']").forEach(sel=>{
+    // Eğer kullanıcı manuel bir şey seçmediyse veya eski global dille aynıysa -> yeni dile çek
+    if(!sel.value || sel.value === oldLang){
+      sel.value = newLang;
+    }
+  });
+}
+
+// Sayfa açılışında: son seçilen arayüz dilini yükle
+const savedLang = localStorage.getItem("globalLang") || "tr";
+globalLang.value = savedLang;
+globalLang.dataset.current = savedLang;
+
+// target_lang select'lerinin başlangıç değeri, arayüz diliyle aynı olsun
+document.querySelectorAll("select[id^='targetLang']").forEach(sel=>{
+  sel.value = savedLang;
+});
+
+// Arayüz metnini ilk kez uygula
+applyUiLanguage(savedLang);
+
+// Global arayüz dili değişince: SADECE arayüz metnini ve
+// eski dile bağlı target_lang alanlarını güncelle
+globalLang.onchange = ()=>{
+  const oldLang = globalLang.dataset.current || "tr";
+  const lang = globalLang.value || "tr";
+  globalLang.dataset.current = lang;
+  localStorage.setItem("globalLang", lang);
+
+  applyUiLanguage(lang);
+  syncTargetLangs(oldLang, lang);
+};
+
+// Menü sekmeleri (PDF / Şikayet / Karşılaştır)
+const navItems = document.querySelectorAll('.nav-item[data-target]');
+const sections = document.querySelectorAll('.main-section');
+
+navItems.forEach(item => {
+  item.addEventListener('click', function (e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('data-target');
+
+    navItems.forEach(n => n.classList.remove('active'));
+    this.classList.add('active');
+
+    sections.forEach(sec => {
+      sec.style.display = (sec.id === targetId) ? 'block' : 'none';
+    });
+  });
+});
+
+// Loader gösterme
+function showLoader(){
+  const el = document.getElementById('loader-overlay');
+  if(el){ el.style.display = 'flex'; }
+}
+</script>
+
+</body>
+</html>
