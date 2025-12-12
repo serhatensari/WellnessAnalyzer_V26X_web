@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="{{ target_lang or 'tr' }}">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {# Başlık: 1. ve 2. dil #}
+        {% set _primary = (target_lang or 'tr')|lower %}
+        {% set _secondary = (second_lang or '')|lower %}
+
+        {% set compare_heads = {
+            'tr': {
+                'title':      'İki Test Karşılaştırma Raporu',
+                'personal':   'Kişisel Bilgiler',
+                'general':    'Genel Karşılaştırma',
+                'body':       'Vücut Formu Karşılaştırması',
+                'systems':    'Sistem Bazlı Değişimler',
+                'improved':   'İyileşen Sistemler',
+                'worsened':   'Kötüleşen Sistemler',
+                'stable':     'Stabil Sistemler',
+                'followup':   '4 Haftalık Takip Planı',
+                'week':       'Hafta',
+                'products':   'Ürün Önerileri'
+            },
+            'en': {
+                'title':      'Two-Test Comparison Report',
+                'personal':   'Personal Information',
+                'general':    'General Comparison',
+                'body':       'Body Composition Comparison',
+                'systems':    'System-Based Changes',
+                'improved':   'Improved Systems',
+                'worsened':   'Worsened Systems',
+                'stable':     'Stable Systems',
+                'followup':   '4-Week Follow-Up Plan',
+                'week':       'Week',
+                'products':   'Product Recommendations'
+            },
+            'de': {
+                'title':      'Vergleichsbericht zweier Tests',
+                'personal':   'Persönliche Daten',
+                'general':    'Allgemeiner Vergleich',
+                'body':       'Vergleich der Körperzusammensetzung',
+                'systems':    'Systembasierte Veränderungen',
+                'improved':   'Verbesserte Systeme',
+                'worsened':   'Verschlechterte Systeme',
+                'stable':     'Stabile Systeme',
+                'followup':   '4-Wochen-Nachverfolgungsplan',
+                'week':       'Woche',
+                'products':   'Produktempfehlungen'
+            },
+            'it': {
+                'title':      'Rapporto di confronto di due test',
+                'personal':   'Dati personali',
+                'general':    'Confronto generale',
+                'body':       'Confronto della composizione corporea',
+                'systems':    'Variazioni per sistema',
+                'improved':   'Sistemi migliorati',
+                'worsened':   'Sistemi peggiorati',
+                'stable':     'Sistemi stabili',
+                'followup':   'Piano di monitoraggio di 4 settimane',
+                'week':       'Settimana',
+                'products':   'Suggerimenti di prodotti'
+            },
+            'es': {
+                'title':      'Informe comparativo de dos pruebas',
+                'personal':   'Datos personales',
+                'general':    'Comparación general',
+                'body':       'Comparación de la composición corporal',
+                'systems':    'Cambios por sistema',
+                'improved':   'Sistemas mejorados',
+                'worsened':   'Sistemas empeorados',
+                'stable':     'Sistemas estables',
+                'followup':   'Plan de seguimiento de 4 semanas',
+                'week':       'Semana',
+                'products':   'Recomendaciones de productos'
+            },
+            'pt': {
+                'title':      'Relatório comparativo de dois testes',
+                'personal':   'Dados pessoais',
+                'general':    'Comparação geral',
+                'body':       'Comparação da composição corporal',
+                'systems':    'Alterações por sistema',
+                'improved':   'Sistemas melhorados',
+                'worsened':   'Sistemas piorados',
+                'stable':     'Sistemas estáveis',
+                'followup':   'Plano de acompanhamento de 4 semanas',
+                'week':       'Semana',
+                'products':   'Recomendações de produtos'
+            },
+            'ru': {
+                'title':      'Сравнительный отчёт по двум тестам',
+                'personal':   'Личные данные',
+                'general':    'Общее сравнение',
+                'body':       'Сравнение состава тела',
+                'systems':    'Изменения по системам',
+                'improved':   'Улучшившиеся системы',
+                'worsened':   'Ухудшившиеся системы',
+                'stable':     'Стабильные системы',
+                'followup':   '4-недельный план наблюдения',
+                'week':       'Неделя',
+                'products':   'Рекомендации по продуктам'
+            },
+            'ar': {
+                'title':      'تقرير مقارنة اختبارين',
+                'personal':   'البيانات الشخصية',
+                'general':    'المقارنة العامة',
+                'body':       'مقارنة بنية الجسم',
+                'systems':    'التغيرات حسب النظام',
+                'improved':   'الأنظمة المتحسنة',
+                'worsened':   'الأنظمة المتدهورة',
+                'stable':     'الأنظمة المستقرة',
+                'followup':   'خطة متابعة لمدة 4 أسابيع',
+                'week':       'الأسبوع',
+                'products':   'توصيات المنتجات'
+            },
+            'fa': {
+                'title':      'گزارش مقایسه دو تست',
+                'personal':   'اطلاعات شخصی',
+                'general':    'مقایسه کلی',
+                'body':       'مقایسه ترکیب بدن',
+                'systems':    'تغییرات بر اساس سیستم',
+                'improved':   'سیستم‌های بهبود یافته',
+                'worsened':   'سیستم‌های بدتر شده',
+                'stable':     'سیستم‌های پایدار',
+                'followup':   'برنامه پیگیری ۴ هفته‌ای',
+                'week':       'هفته',
+                'products':   'توصیه‌های محصول'
+            },
+            'az': {
+                'title':      'İki Test Müqayisə Hesabatı',
+                'personal':   'Şəxsi Məlumatlar',
+                'general':    'Ümumi Müqayisə',
+                'body':       'Bədən Forması Müqayisəsi',
+                'systems':    'Sistem Bazlı Dəyişikliklər',
+                'improved':   'Yaxşılaşan Sistemlər',
+                'worsened':   'Pisləşən Sistemlər',
+                'stable':     'Stabil Sistemlər',
+                'followup':   '4 Həftəlik İzləmə Planı',
+                'week':       'Həftə',
+                'products':   'Məhsul Tövsiyələri'
+            },
+            'id': {
+                'title':      'Laporan perbandingan dua tes',
+                'personal':   'Data pribadi',
+                'general':    'Perbandingan umum',
+                'body':       'Perbandingan komposisi tubuh',
+                'systems':    'Perubahan berdasarkan sistem',
+                'improved':   'Sistem yang membaik',
+                'worsened':   'Sistem yang memburuk',
+                'stable':     'Sistem yang stabil',
+                'followup':   'Rencana tindak lanjut 4 minggu',
+                'week':       'Minggu',
+                'products':   'Rekomendasi produk'
+            },
+            'mn': {
+                'title':      'Хоёр шинжилгээний харьцуулсан тайлан',
+                'personal':   'Хувийн мэдээлэл',
+                'general':    'Ерөнхий харьцуулалт',
+                'body':       'Биеийн бүтцийн харьцуулалт',
+                'systems':    'Систем тус бүрийн өөрчлөлт',
+                'improved':   'Сайжирсан системүүд',
+                'worsened':   'Муудсан системүүд',
+                'stable':     'Тогтвортой системүүд',
+                'followup':   '4 долоо хоногийн хяналтын төлөвлөгөө',
+                'week':       'Долоо хоног',
+                'products':   'Бүтээгдэхүүний зөвлөмж'
+            }
+        } %}
+
+        {% set head_primary   = compare_heads.get(_primary, compare_heads['tr']) %}
+        {% set head_secondary = compare_heads.get(_secondary) %}
+
+        {{ head_primary.title }}
+        {% if head_secondary %}
+            / {{ head_secondary.title }}
+        {% endif %}
+        {% if ui.report_title %}
+            / {{ ui.report_title }}
+        {% endif %}
+    </title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #05060a;
+            color: #f9fafb;
+        }
+        .wrap {
+            max-width: 980px;
+            margin: 18px auto 26px auto;
+            padding: 0 18px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .title-block {
+            display: flex;
+            flex-direction: column;
+        }
+        .title-main {
+            font-size: 24px;          /* BÜYÜTTÜK */
+            font-weight: 600;
+            color: #ffd86b;           /* GOLD ANA BAŞLIK */
+        }
+        .title-sub {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .top-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #f9fafb;
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 6px 11px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover {
+            background: #111827;
+        }
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 3px 8px;
+            border: 1px solid #4b5563;
+            font-size: 11px;
+            color: #e5e7eb;
+            background: #020617;
+        }
+        .brand-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #facc15;
+        }
+        .meta {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+        .card {
+            background: radial-gradient(circle at top, #020617 0, #020617 60%, #020617 100%);
+            border-radius: 16px;
+            border: 1px solid #111827;
+            margin-bottom: 12px;
+            padding: 10px 12px;
+        }
+        .card-header {
+            font-size: 18px;          /* 14 → 18 */
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #ffd86b;           /* GOLD KART BAŞLIĞI */
+        }
+        .card-body {
+            font-size: 14px;          /* 12 → 14 */
+            color: #e5e7eb;
+            line-height: 1.65;
+        }
+        .card-body p {
+            margin: 0 0 6px 0;
+            white-space: pre-line;
+        }
+        .card-body ul {
+            margin: 4px 0 0 18px;
+            padding: 0;
+        }
+        .card-body li {
+            margin-bottom: 3px;
+        }
+        .cols-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .list-card {
+            background: #020617;
+            border-radius: 12px;
+            border: 1px solid #1f2937;
+            padding: 6px 8px;
+        }
+        .list-card-title {
+            font-size: 14px;          /* 12 → 14 */
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #8fd3ff;           /* AÇIK MAVİ ALT BAŞLIK */
+        }
+        .footer-note {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #374151;
+        }
+        /* === EKRANDA (HTML) GÖRÜNÜMÜ İÇİN GOLD BAŞLIKLAR === */
+        body.report-page h1,
+        body.report-page h2,
+        body.report-page h3,
+        body.report-page .section-title,
+        body.report-page .card-header,
+        body.report-page .system-card h3,
+        body.report-page .list-card-title {
+        color: #ffd86b; /* GOLD */
+}
+
+        /* 2 test karşılaştırmadaki küçük alt başlıklar için açık mavi istersek: */
+        body.report-page .list-card-title {
+        color: #8fd3ff; /* AÇIK MAVİ ALT BAŞLIK */
+}
+
+        @page {
+            size: A4;
+            margin: 16mm 16mm 16mm 16mm;
+        }
+        @media print {
+            body {
+                background: #ffffff;
+                color: #000000;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .card {
+                page-break-inside: avoid;
+                background: #ffffff;
+                border-color: #d1d5db;
+            }
+            .list-card {
+                background: #ffffff;
+                border-color: #d1d5db;
+            }
+            .footer-note {
+                color: #4b5563;
+            }
+            .top-actions { display: none; }
+
+            /* PDF’TE HER ŞEY SİYAH */
+            .title-main,
+            .card-header,
+            .list-card-title,
+            .card-body,
+            .card-body p,
+            .card-body li {
+                color: #000000 !important;
+            }
+        }
+    </style>
+    <script>
+        function goHome() { window.location.href = "/"; }
+        function newTest() { window.location.href = "/"; }
+        function savePdf() { window.print(); }
+    </script>
+</head>
+<body class="report-page">
+<div class="wrap">
+    {# Başlık barı #}
+    <div class="topbar">
+        <div class="title-block">
+            <div class="title-main">
+                {{ head_primary.title }}
+                {% if head_secondary %}
+                    <div style="font-size: 13px; color: #d1d5db; margin-top: 2px;">
+                        {{ head_secondary.title }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="title-sub">
+                {{ language_pair }} · {{ generated_at }}
+            </div>
+        </div>
+        <div class="top-actions">
+            <button class="btn" onclick="goHome()">
+                {{ ui.btn_back or "Ana Sayfaya Dön" }}
+            </button>
+            <button class="btn" onclick="newTest()">
+                {{ ui.btn_new or "Yeni Test" }}
+            </button>
+            <button class="btn" onclick="savePdf()">
+                {{ ui.btn_pdf or "PDF Kaydet" }}
+            </button>
+        </div>
+    </div>
+
+    <div class="meta">
+        {{ labels.label_brand or "Marka" }}:
+        <span class="brand-pill">
+            <span class="brand-dot"></span>
+            <span>{{ brand_label }}</span>
+        </span>
+    </div>
+
+    <!-- KİŞİSEL BİLGİLER -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.personal }}
+            {% if head_secondary %} / {{ head_secondary.personal }}{% endif %}
+        </div>
+        <div class="card-body">
+            <p>
+                {{ labels.label_name or "Ad Soyad" }}: {{ analysis.kisi_bilgileri.ad_soyad }}<br>
+                {{ labels.label_age or "Yaş" }}: {{ analysis.kisi_bilgileri.yas }}<br>
+                {{ labels.label_gender or "Cinsiyet" }}: {{ analysis.kisi_bilgileri.cinsiyet }}
+            </p>
+        </div>
+    </section>
+
+    <!-- GENEL KARŞILAŞTIRMA -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.general }}
+            {% if head_secondary %} / {{ head_secondary.general }}{% endif %}
+        </div>
+        <div class="card-body">
+            <p>{{ analysis.genel_degerlendirme }}</p>
+        </div>
+    </section>
+
+    <!-- VÜCUT FORMU KARŞILAŞTIRMASI -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.body }}
+            {% if head_secondary %} / {{ head_secondary.body }}{% endif %}
+        </div>
+        <div class="card-body">
+            <p>{{ analysis.vucut_formu_karsilastirma }}</p>
+        </div>
+    </section>
+
+    <!-- SİSTEM BAZLI DEĞİŞİMLER -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.systems }}
+            {% if head_secondary %} / {{ head_secondary.systems }}{% endif %}
+        </div>
+        <div class="card-body">
+            <div class="cols-3">
+                <!-- İYİLEŞEN SİSTEMLER -->
+                <div class="list-card">
+                    <div class="list-card-title">
+                        {{ head_primary.improved }}
+                        {% if head_secondary %} / {{ head_secondary.improved }}{% endif %}
+                    </div>
+                    {% if analysis.iyilesen_sistemler and analysis.iyilesen_sistemler|length > 0 %}
+                        <ul>
+                            {% for item in analysis.iyilesen_sistemler %}
+                                <li>
+                                    <strong>{{ item.sistem_adi }}</strong>
+                                    {% if item.degisim %}
+                                        – {{ item.degisim }}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>{{ labels.msg_no_improved_systems or "Öne çıkan iyileşme kaydı yok." }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- KÖTÜLEŞEN SİSTEMLER -->
+                <div class="list-card">
+                    <div class="list-card-title">
+                        {{ head_primary.worsened }}
+                        {% if head_secondary %} / {{ head_secondary.worsened }}{% endif %}
+                    </div>
+                    {% if analysis.kotulesen_sistemler and analysis.kotulesen_sistemler|length > 0 %}
+                        <ul>
+                            {% for item in analysis.kotulesen_sistemler %}
+                                <li>
+                                    <strong>{{ item.sistem_adi }}</strong>
+                                    {% if item.degisim %}
+                                        – {{ item.degisim }}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>{{ labels.msg_no_worsened_systems or "Belirgin kötüleşme kaydı yok." }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- STABİL SİSTEMLER -->
+                <div class="list-card">
+                    <div class="list-card-title">
+                        {{ head_primary.stable }}
+                        {% if head_secondary %} / {{ head_secondary.stable }}{% endif %}
+                    </div>
+                    {% if analysis.stabil_sistemler and analysis.stabil_sistemler|length > 0 %}
+                        <ul>
+                            {% for item in analysis.stabil_sistemler %}
+                                <li>
+                                    <strong>{{ item.sistem_adi }}</strong>
+                                    {% if item.degisim %}
+                                        – {{ item.degisim }}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>{{ labels.msg_no_stable_systems or "Stabil seyreden sistem bilgisi yok." }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 HAFTALIK TAKİP PLANI -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.followup }}
+            {% if head_secondary %} / {{ head_secondary.followup }}{% endif %}
+        </div>
+        <div class="card-body">
+            {% if analysis.dort_haftalik_plan and analysis.dort_haftalik_plan|length > 0 %}
+                <ul>
+                    {% for hafta in analysis.dort_haftalik_plan %}
+                        <li>
+                            <strong>
+                                {{ hafta.hafta }}.
+                                {{ head_primary.week }}
+                                {% if head_secondary %} / {{ head_secondary.week }}{% endif %}
+                                – {{ hafta.odak }}
+                            </strong><br>
+                            {{ hafta.detay }}<br>
+                            <span>{{ labels.label_product_usage or "Ürün kullanımı" }}:</span> {{ hafta.urun_kullanimi }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>{{ labels.msg_no_4week_plan or "Bu karşılaştırma için ayrı bir 4 haftalık plan üretilmedi." }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ÜRÜN ÖNERİLERİ -->
+    <section class="card">
+        <div class="card-header">
+            {{ head_primary.products }}
+            {% if head_secondary %} / {{ head_secondary.products }}{% endif %}
+        </div>
+        <div class="card-body">
+            {% if analysis.onemore_urun_onerileri and analysis.onemore_urun_onerileri|length > 0 %}
+                <ul>
+                    {% for urun in analysis.onemore_urun_onerileri %}
+                        <li>
+                            <strong>{{ urun.urun }}</strong>
+                            {% if urun.neden %}
+                                – {{ urun.neden }}
+                            {% endif %}
+                            {% if urun.sure %}
+                                ({{ urun.sure }})
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>{{ labels.msg_no_product_recommendations or "Bu karşılaştırma için ekstra ürün önerisi üretilmedi." }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="footer-note">
+        {{ analysis.tibbi_sorumluluk or "" }}
+    </div>
+</div>
+</body>
+</html>

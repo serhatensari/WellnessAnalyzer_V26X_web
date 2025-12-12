@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="{{ target_lang or 'tr' }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>Pet Wellness Raporu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <style>
+        body{
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:#020617;
+            color:#f9fafb;
+            margin:0;
+            padding:0;
+        }
+        .page{
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+        h1{
+            text-align:center;
+            margin:0 0 6px;
+        }
+        .sub{
+            text-align:center;
+            font-size:0.9rem;
+            color:#e5e5e5;
+            margin-bottom:18px;
+        }
+        .badge-row{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            justify-content:center;
+            margin-bottom:18px;
+            font-size:0.8rem;
+        }
+        .badge{
+            padding:4px 10px;
+            border-radius:999px;
+            border:1px solid #38bdf8;
+            color:#e0f2fe;
+            background:rgba(56,189,248,0.1);
+        }
+        .section{
+            background:#020617;
+            border-radius:12px;
+            border:1px solid #1e293b;
+            padding:14px 16px;
+            margin-bottom:16px;
+        }
+        .section-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:baseline;
+            margin-bottom:8px;
+        }
+        .section-title{
+            font-size:1rem;
+            font-weight:600;
+        }
+        .section-tag{
+            font-size:0.75rem;
+            color:#9ca3af;
+        }
+        .grid-two{
+            display:grid;
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:10px 24px;
+        }
+        .label{
+            font-size:0.78rem;
+            color:#9ca3af;
+            margin-bottom:2px;
+        }
+        .value{
+            font-size:0.9rem;
+        }
+        .pill-table{
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.85rem;
+        }
+        .pill-table th,
+        .pill-table td{
+            border-bottom:1px solid #1e293b;
+            padding:6px 4px;
+            vertical-align:top;
+        }
+        .pill-table th{
+            text-align:left;
+            color:#e5e7eb;
+            font-weight:500;
+            font-size:0.8rem;
+        }
+        .system-card-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:12px;
+        }
+        .system-card{
+            background:#020617;
+            border-radius:10px;
+            border:1px solid #1e293b;
+            padding:10px 12px;
+            font-size:0.8rem;
+        }
+        .system-name{
+            font-weight:600;
+            margin-bottom:4px;
+            color:#38bdf8;
+        }
+        .system-block{
+            margin-top:4px;
+        }
+        .system-block strong{
+            display:block;
+            margin-bottom:2px;
+        }
+        .small-text{
+            font-size:0.75rem;
+            color:#9ca3af;
+            margin-top:6px;
+        }
+        .export-bar{
+            display:flex;
+            justify-content:flex-end;
+            margin-top:18px;
+        }
+        .btn{
+            padding:8px 16px;
+            border-radius:999px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            font-size:0.85rem;
+        }
+        .btn-primary{
+            background:#38bdf8;
+            color:#082f49;
+        }
+        .btn-primary:hover{
+            background:#0ea5e9;
+        }
+        @media (max-width:720px){
+            .grid-two{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    {% set d = analysis.data %}
+    {% set p = d.pet_bilgileri or {} %}
+
+    <h1>Pet Wellness Raporu</h1>
+    <div class="sub">
+        Evcil dostunuz için 18 sistemlik wellness değerlendirmesi
+    </div>
+
+    <div class="badge-row">
+        <div class="badge">Pet Markası: {{ analysis.brand or 'PatiPro Wellness+' }}</div>
+        <div class="badge">Tür: {{ p.tur or '-' }}</div>
+        <div class="badge">
+            Dil: {{ target_lang_label or target_lang }}
+            {% if second_lang %}
+                · {{ second_lang_label or second_lang }}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pet Bilgileri -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Pet ve Sahip Bilgileri</div>
+        </div>
+        <div class="grid-two">
+            <div>
+                <div class="label">Sahip Adı</div>
+                <div class="value">{{ p.sahip_adi or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Pet Adı</div>
+                <div class="value">{{ p.pet_adi or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Tür</div>
+                <div class="value">{{ p.tur or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Cins</div>
+                <div class="value">{{ p.cins or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Yaş</div>
+                <div class="value">{{ p.yas or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Kilo (kg)</div>
+                <div class="value">{{ p.kilo_kg or "" }}</div>
+            </div>
+            <div>
+                <div class="label">Test Tarihi</div>
+                <div class="value">{{ p.test_tarihi or "" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Genel Bulgu -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Genel Wellness Özeti</div>
+        </div>
+        <div class="value">
+            {{ (d.genel_bulgu.metin if d.genel_bulgu else "") | replace('\n','<br>') | safe }}
+        </div>
+    </div>
+
+    <!-- En Riskli Sistemler -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Öncelikli Takip Gerektiren Sistemler</div>
+        </div>
+        <table class="pill-table">
+            <thead>
+            <tr>
+                <th style="width:32px;">#</th>
+                <th>Sistem</th>
+                <th>Özet</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for s in d.en_riskli_sistemler or [] %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ s.sistem_adi }}</td>
+                    <td>{{ s.ozet | replace('\n','<br>') | safe }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="3" class="small-text">Öncelikli sistem listelenmedi.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Yaşam Önerileri -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Günlük Yaşam ve Bakım Önerileri</div>
+        </div>
+        <div class="value">
+            {{ d.yasam_onerileri | default("") | replace('\n','<br>') | safe }}
+        </div>
+    </div>
+
+    <!-- Pet Sistem Kartları -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Sistem Bazlı Pet Wellness Kartları</div>
+            <div class="section-tag">Her sistem için durum, belirtiler ve destek önerileri</div>
+        </div>
+        <div class="system-card-grid">
+            {% for card in d.pet_sistem_kartlari or [] %}
+                <div class="system-card">
+                    <div class="system-name">{{ card.sistem_adi }}</div>
+
+                    <div class="system-block">
+                        <strong>Durum</strong>
+                        <div>{{ card.durum | replace('\n','<br>') | safe }}</div>
+                    </div>
+                    <div class="system-block">
+                        <strong>Muhtemel Belirtiler</strong>
+                        <div>{{ card.muhtemel_belirtiler | replace('\n','<br>') | safe }}</div>
+                    </div>
+                    <div class="system-block">
+                        <strong>Riskler</strong>
+                        <div>{{ card.riskler | replace('\n','<br>') | safe }}</div>
+                    </div>
+                    <div class="system-block">
+                        <strong>Yaşam Tavsiyesi</strong>
+                        <div>{{ card.yasam_tavsiyesi | replace('\n','<br>') | safe }}</div>
+                    </div>
+                    <div class="system-block">
+                        <strong>Önerilen Ürünler (Markasız)</strong>
+                        <ul>
+                            {% for u in card.onerilen_urunler or [] %}
+                                <li>
+                                    <span style="font-weight:600;">{{ u.urun_adi }}</span> –
+                                    {{ u.hedef }}
+                                    {% if u.kullanim_suresi %} ({{ u.kullanim_suresi }}){% endif %}
+                                </li>
+                            {% else %}
+                                <li class="small-text">Bu sistem için ürün önerisi yok.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Genel Ürün Önerileri -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Genel Destek Ürün Önerileri (Markasız)</div>
+        </div>
+        <table class="pill-table">
+            <thead>
+            <tr>
+                <th style="width:220px;">Ürün / Takviye</th>
+                <th>Hedef</th>
+                <th>Kullanım Süresi</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for u in d.genel_urun_onerileri or [] %}
+                <tr>
+                    <td>{{ u.urun_adi }}</td>
+                    <td>{{ u.hedef | replace('\n','<br>') | safe }}</td>
+                    <td>{{ u.kullanim_suresi }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="3" class="small-text">Genel ürün önerisi bulunamadı.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tıbbi Sorumluluk -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Veteriner Tıbbi Sorumluluk Beyanı</div>
+        </div>
+        <div class="small-text">
+            {{ d.tibbi_sorumluluk | default("") | replace('\n','<br>') | safe }}
+        </div>
+    </div>
+
+    {% if not pdf_mode %}
+    <div class="export-bar">
+        <form action="/export-pdf" method="post">
+            <input type="hidden" name="template_name" value="petreport.html" />
+            <input type="hidden" name="filename" value="pet_wellness_raporu.pdf" />
+            <input type="hidden" name="payload" value='{{ analysis|tojson }}' />
+            <button type="submit" class="btn btn-primary">PDF Olarak İndir</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+<!-- === Alt Aksiyon Butonları (Sayfa başına dön + PDF kaydet) === -->
+<div class="bottom-actions" style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #444; display: flex; gap: 12px; flex-wrap: wrap;">
+  <button type="button"
+          onclick="window.location.href='/'"
+          style="padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+    ⬅️ Anasayfaya Dön / Yeni Analiz Yap
+  </button>
+
+  <button type="button"
+          onclick="window.print()"
+          style="padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">
+    🧾 PDF Olarak Kaydet / Yazdır
+  </button>
+</div>
+</body>
+</html>
+</body>
+</html>
