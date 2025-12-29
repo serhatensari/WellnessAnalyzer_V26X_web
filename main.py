@@ -17,8 +17,8 @@ from openai import OpenAI
 # ====================================================
 #  JSON MODE'DAN GELEN BİRDEN FAZLA PARÇAYI BİRLEŞTİRME
 # ====================================================
-
-def merge_json_mode_payloads(raw_json_list: List[str]) -> Dict[str, Any]:
+hataversin
+hataversindef merge_json_mode_payloads(raw_json_list: List[str]) -> Dict[str, Any]:
     """
     JSON MODE'dan gelen birden fazla ham JSON stringini tek bir analysis dict içinde birleştirir.
     - 1. JSON: kisi_bilgileri, vucut_formu, genel_bulgu, plan vs.
